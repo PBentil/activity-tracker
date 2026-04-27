@@ -13,7 +13,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('activities.report');
 
     Route::resource('activities', ActivityController::class)
-        ->except(['edit', 'update', 'destroy']);
+        ->only(['index', 'store', 'show']);
 
     Route::post('activities/{activity}/updates', [ActivityUpdateController::class, 'store'])
         ->name('activity-updates.store');

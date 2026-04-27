@@ -1,99 +1,150 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Activity Reports
-            </h2>
-            <a href="{{ route('activities.index') }}"
-               class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-                ← Back
-            </a>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">📊 Activity Reports</h2>
+                <p class="text-sm text-gray-500 mt-1">Query activity histories by custom date range</p>
+            </div>
+            <a href="{{ route('activities.index') }}" class="btn-secondary">← Back</a>
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-
-            <div class="bg-white rounded shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter by Date Range</h3>
-                <form method="GET" action="{{ route('activities.report') }}">
-                    <div class="flex gap-4 items-end">
-                        <div class="flex-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">From</label>
-                            <input type="date" name="from" value="{{ $from }}"
-                                   class="w-full border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">To</label>
-                            <input type="date" name="to" value="{{ $to }}"
-                                   class="w-full border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div>
-                            <button type="submit"
-                                    class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                                Filter
-                            </button>
-                        </div>
-                    </div>
-                </form>
+    {{-- Filter Card --}}
+    <div class="card mb-6" style="border-left: none; border-top: 4px solid #10b981;">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">🔍 Filter by Date Range</h3>
+        <form method="GET" action="{{ route('activities.report') }}">
+            <div class="flex gap-4 items-end flex-wrap">
+                <div class="flex-1 min-w-40">
+                    <label class="form-label">From</label>
+                    <input type="date" name="from" value="{{ $from }}" class="form-input">
+                </div>
+                <div class="flex-1 min-w-40">
+                    <label class="form-label">To</label>
+                    <input type="date" name="to" value="{{ $to }}" class="form-input">
+                </div>
+                <div>
+                    <button type="submit" class="btn-primary">
+                        🔍 Filter
+                    </button>
+                </div>
             </div>
+        </form>
+    </div>
 
-            <div class="bg-white rounded shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                    Results: {{ $activities->count() }} activities
-                    from {{ \Carbon\Carbon::parse($from)->format('F j, Y') }}
-                    to {{ \Carbon\Carbon::parse($to)->format('F j, Y') }}
-                </h3>
-
-                @if($activities->isEmpty())
-                    <p class="text-gray-500 text-sm">No activities found for this period.</p>
-                @else
-                    <div class="space-y-6">
-                        @foreach($activities as $activity)
-                            <div class="border rounded p-4">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">{{ $activity->title }}</h4>
-                                        <p class="text-sm text-gray-500">
-                                            {{ ucfirst($activity->category) }} —
-                                            {{ $activity->activity_date->format('F j, Y') }}
-                                        </p>
-                                        <p class="text-gray-600 text-sm mt-1">{{ $activity->description }}</p>
-                                    </div>
-                                    @if($activity->latestUpdate)
-                                        <span class="px-3 py-1 rounded-full text-sm font-medium
-                                            {{ $activity->latestUpdate->status === 'done'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-yellow-100 text-yellow-800' }}">
-                                            {{ ucfirst($activity->latestUpdate->status) }}
-                                        </span>
-                                    @endif
-                                </div>
-
-                                @if($activity->updates->isNotEmpty())
-                                    <div class="border-t pt-3">
-                                        <p class="text-sm font-medium text-gray-700 mb-2">Updates:</p>
-                                        <div class="space-y-2">
-                                            @foreach($activity->updates->sortByDesc('updated_at_time') as $update)
-                                                <div class="flex justify-between text-sm">
-                                                    <span class="text-gray-600">
-                                                        <span class="font-medium">{{ $update->user->name }}</span>
-                                                        — {{ $update->remark ?? 'No remark' }}
-                                                    </span>
-                                                    <span class="text-gray-400">
-                                                        {{ $update->updated_at_time->format('F j, Y h:i A') }}
-                                                    </span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-
+    {{-- Summary Stats --}}
+    <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 text-center shadow-sm border-t-4 border-emerald-400">
+            <p class="text-3xl font-bold text-slate-800">{{ $activities->count() }}</p>
+            <p class="text-sm text-gray-500 mt-1">Total Activities</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 text-center shadow-sm border-t-4 border-green-400">
+            <p class="text-3xl font-bold text-green-600">
+                {{ $activities->filter(fn($a) => $a->latestUpdate?->status === 'done')->count() }}
+            </p>
+            <p class="text-sm text-gray-500 mt-1">Completed</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 text-center shadow-sm border-t-4 border-yellow-400">
+            <p class="text-3xl font-bold text-yellow-600">
+                {{ $activities->filter(fn($a) => $a->latestUpdate?->status === 'pending' || !$a->latestUpdate)->count() }}
+            </p>
+            <p class="text-sm text-gray-500 mt-1">Pending</p>
         </div>
     </div>
+
+    {{-- Results Table --}}
+    <div class="card" style="border-left: none; border-top: 4px solid #1e293b;">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-800">Results</h3>
+            <span class="badge-none">
+                {{ \Carbon\Carbon::parse($from)->format('M j, Y') }} —
+                {{ \Carbon\Carbon::parse($to)->format('M j, Y') }}
+            </span>
+        </div>
+
+        @if($activities->isEmpty())
+            <div class="text-center py-12">
+                <div class="text-5xl mb-3">🔍</div>
+                <p class="text-gray-400">No activities found for this period.</p>
+            </div>
+        @else
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Activity</th>
+                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Category</th>
+                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Date</th>
+                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Updates</th>
+                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Status</th>
+                        <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($activities as $index => $activity)
+                        <tr style="border-bottom: 1px solid #f1f5f9; {{ $index % 2 == 0 ? 'background: white;' : 'background: #f8fafc;' }}"
+                            onmouseover="this.style.background='#f0fdf4'"
+                            onmouseout="this.style.background='{{ $index % 2 == 0 ? 'white' : '#f8fafc' }}'">
+                            <td style="padding: 14px 16px;">
+                                <p class="font-semibold text-slate-800">{{ $activity->title }}</p>
+                                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
+                                    {{ Str::limit($activity->description, 50) }}
+                                </p>
+                            </td>
+                            <td style="padding: 14px 16px;">
+                                    <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full font-medium">
+                                        {{ ucfirst($activity->category) }}
+                                    </span>
+                            </td>
+                            <td style="padding: 14px 16px; color: #64748b; white-space: nowrap;">
+                                {{ $activity->activity_date->format('M j, Y') }}
+                            </td>
+                            <td style="padding: 14px 16px;">
+                                @if($activity->updates->isNotEmpty())
+                                    <div class="space-y-1">
+                                        @foreach($activity->updates->sortByDesc('updated_at_time')->take(2) as $update)
+                                            <div style="font-size: 0.78rem; color: #4b5563;">
+                                                <span style="font-weight: 600; color: #1e293b;">{{ $update->user->name }}</span>
+                                                — {{ Str::limit($update->remark ?? 'No remark', 30) }}
+                                                <span style="color: #94a3b8;">
+                                                        ({{ $update->updated_at_time->format('h:i A') }})
+                                                    </span>
+                                            </div>
+                                        @endforeach
+                                        @if($activity->updates->count() > 2)
+                                            <p style="font-size: 0.75rem; color: #10b981;">
+                                                +{{ $activity->updates->count() - 2 }} more
+                                            </p>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span style="color: #94a3b8; font-size: 0.85rem;">No updates</span>
+                                @endif
+                            </td>
+                            <td style="padding: 14px 16px;">
+                                @if($activity->latestUpdate)
+                                    @if($activity->latestUpdate->status === 'done')
+                                        <span class="badge-done">✅ Done</span>
+                                    @else
+                                        <span class="badge-pending">⏳ Pending</span>
+                                    @endif
+                                @else
+                                    <span class="badge-none">— None</span>
+                                @endif
+                            </td>
+                            <td style="padding: 14px 16px; text-align: center;">
+                                <a href="{{ route('activities.show', $activity) }}"
+                                   style="color: #10b981; font-size: 0.85rem; font-weight: 600; text-decoration: none;"
+                                   onmouseover="this.style.textDecoration='underline'"
+                                   onmouseout="this.style.textDecoration='none'">
+                                    View →
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+
 </x-app-layout>
