@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('activities.index');
-});
+})->name('home');
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('activities', ActivityController::class)
@@ -22,4 +22,4 @@ Route::middleware(['auth'])->group(function () {
         ->name('activity-updates.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__.'/settings.php';
