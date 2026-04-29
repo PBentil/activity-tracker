@@ -16,7 +16,6 @@ class ActivityController extends Controller
         return view('activities.index', compact('activities'));
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
