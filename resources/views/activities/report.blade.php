@@ -1,143 +1,109 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h2 class="text-2xl font-bold text-slate-800">📊 Activity Reports</h2>
-                <p class="text-sm text-gray-500 mt-1">Query activity histories by custom date range</p>
+                <p class="page-title">Activity Reports</p>
+                <p class="page-subtitle">Query activity histories by custom date range</p>
             </div>
-            <a href="{{ route('activities.index') }}" class="btn-secondary">← Back</a>
+            <a href="{{ route('activities.index') }}" class="btn-secondary">Back</a>
         </div>
     </x-slot>
 
-    {{-- Filter Card --}}
-    <div class="card mb-6" style="border-left: none; border-top: 4px solid #10b981;">
-        <h3 class="text-lg font-bold text-slate-800 mb-4">🔍 Filter by Date Range</h3>
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <p class="section-title">Filter by Date Range</p>
         <form method="GET" action="{{ route('activities.report') }}">
-            <div class="flex gap-4 items-end flex-wrap">
-                <div class="flex-1 min-w-40">
+            <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 160px;">
                     <label class="form-label">From</label>
                     <input type="date" name="from" value="{{ $from }}" class="form-input">
                 </div>
-                <div class="flex-1 min-w-40">
+                <div style="flex: 1; min-width: 160px;">
                     <label class="form-label">To</label>
                     <input type="date" name="to" value="{{ $to }}" class="form-input">
                 </div>
                 <div>
-                    <button type="submit" class="btn-primary">
-                        🔍 Filter
-                    </button>
+                    <button type="submit" class="btn-primary">Apply Filter</button>
                 </div>
             </div>
         </form>
     </div>
 
-    {{-- Summary Stats --}}
-    <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-4 text-center shadow-sm border-t-4 border-emerald-400">
-            <p class="text-3xl font-bold text-slate-800">{{ $activities->count() }}</p>
-            <p class="text-sm text-gray-500 mt-1">Total Activities</p>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="stat-card">
+            <p class="stat-number">{{ $activities->count() }}</p>
+            <p class="stat-label">Total Activities</p>
         </div>
-        <div class="bg-white rounded-xl p-4 text-center shadow-sm border-t-4 border-green-400">
-            <p class="text-3xl font-bold text-green-600">
+        <div class="stat-card">
+            <p class="stat-number" style="color: #15803d;">
                 {{ $activities->filter(fn($a) => $a->latestUpdate?->status === 'done')->count() }}
             </p>
-            <p class="text-sm text-gray-500 mt-1">Completed</p>
+            <p class="stat-label">Completed</p>
         </div>
-        <div class="bg-white rounded-xl p-4 text-center shadow-sm border-t-4 border-yellow-400">
-            <p class="text-3xl font-bold text-yellow-600">
-                {{ $activities->filter(fn($a) => $a->latestUpdate?->status === 'pending' || !$a->latestUpdate)->count() }}
+        <div class="stat-card">
+            <p class="stat-number" style="color: #b45309;">
+                {{ $activities->filter(fn($a) => $a->latestUpdate?->status !== 'done')->count() }}
             </p>
-            <p class="text-sm text-gray-500 mt-1">Pending</p>
+            <p class="stat-label">Pending</p>
         </div>
     </div>
 
-    {{-- Results Table --}}
-    <div class="card" style="border-left: none; border-top: 4px solid #1e293b;">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-slate-800">Results</h3>
-            <span class="badge-none">
-                {{ \Carbon\Carbon::parse($from)->format('M j, Y') }} —
-                {{ \Carbon\Carbon::parse($to)->format('M j, Y') }}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <p class="section-title" style="margin-bottom: 0;">Results</p>
+            <span class="badge-none" style="font-size: 0.72rem;">
+                {{ \Carbon\Carbon::parse($from)->format('M j, Y') }} — {{ \Carbon\Carbon::parse($to)->format('M j, Y') }}
             </span>
         </div>
 
         @if($activities->isEmpty())
-            <div class="text-center py-12">
-                <div class="text-5xl mb-3">🔍</div>
-                <p class="text-gray-400">No activities found for this period.</p>
+            <div style="text-align: center; padding: 3rem 0; color: #9ca3af;">
+                <p style="font-size: 0.85rem;">No activities found for this period.</p>
             </div>
         @else
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <table class="data-table">
                     <thead>
-                    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Activity</th>
-                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Category</th>
-                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Date</th>
-                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Updates</th>
-                        <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Status</th>
-                        <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Action</th>
+                    <tr>
+                        <th>Activity</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Last Update</th>
+                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($activities as $index => $activity)
-                        <tr style="border-bottom: 1px solid #f1f5f9; {{ $index % 2 == 0 ? 'background: white;' : 'background: #f8fafc;' }}"
-                            onmouseover="this.style.background='#f0fdf4'"
-                            onmouseout="this.style.background='{{ $index % 2 == 0 ? 'white' : '#f8fafc' }}'">
-                            <td style="padding: 14px 16px;">
-                                <p class="font-semibold text-slate-800">{{ $activity->title }}</p>
-                                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
-                                    {{ Str::limit($activity->description, 50) }}
-                                </p>
+                    @foreach($activities as $activity)
+                        <tr>
+                            <td>
+                                <p style="font-weight: 500; font-size: 0.82rem; color: #111827;">{{ $activity->title }}</p>
+                                <p style="font-size: 0.72rem; color: #9ca3af;">{{ Str::limit($activity->description, 50) }}</p>
                             </td>
-                            <td style="padding: 14px 16px;">
-                                    <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full font-medium">
-                                        {{ ucfirst($activity->category) }}
-                                    </span>
-                            </td>
-                            <td style="padding: 14px 16px; color: #64748b; white-space: nowrap;">
+                            <td><span class="tag">{{ ucfirst($activity->category) }}</span></td>
+                            <td style="white-space: nowrap; font-size: 0.8rem; color: #6b7280;">
                                 {{ $activity->activity_date->format('M j, Y') }}
                             </td>
-                            <td style="padding: 14px 16px;">
-                                @if($activity->updates->isNotEmpty())
-                                    <div class="space-y-1">
-                                        @foreach($activity->updates->sortByDesc('updated_at_time')->take(2) as $update)
-                                            <div style="font-size: 0.78rem; color: #4b5563;">
-                                                <span style="font-weight: 600; color: #1e293b;">{{ $update->user->name }}</span>
-                                                — {{ Str::limit($update->remark ?? 'No remark', 30) }}
-                                                <span style="color: #94a3b8;">
-                                                        ({{ $update->updated_at_time->format('h:i A') }})
-                                                    </span>
-                                            </div>
-                                        @endforeach
-                                        @if($activity->updates->count() > 2)
-                                            <p style="font-size: 0.75rem; color: #10b981;">
-                                                +{{ $activity->updates->count() - 2 }} more
-                                            </p>
-                                        @endif
-                                    </div>
-                                @else
-                                    <span style="color: #94a3b8; font-size: 0.85rem;">No updates</span>
-                                @endif
-                            </td>
-                            <td style="padding: 14px 16px;">
+                            <td>
                                 @if($activity->latestUpdate)
-                                    @if($activity->latestUpdate->status === 'done')
-                                        <span class="badge-done">✅ Done</span>
-                                    @else
-                                        <span class="badge-pending">⏳ Pending</span>
-                                    @endif
+                                    <p style="font-size: 0.8rem; font-weight: 500; color: #111827;">{{ $activity->latestUpdate->user->name }}</p>
+                                    <p style="font-size: 0.72rem; color: #9ca3af;">
+                                        {{ Str::limit($activity->latestUpdate->remark ?? '—', 35) }}
+                                    </p>
                                 @else
-                                    <span class="badge-none">— None</span>
+                                    <span style="color: #9ca3af; font-size: 0.8rem;">No updates</span>
                                 @endif
                             </td>
-                            <td style="padding: 14px 16px; text-align: center;">
-                                <a href="{{ route('activities.show', $activity) }}"
-                                   style="color: #10b981; font-size: 0.85rem; font-weight: 600; text-decoration: none;"
-                                   onmouseover="this.style.textDecoration='underline'"
-                                   onmouseout="this.style.textDecoration='none'">
-                                    View →
-                                </a>
+                            <td>
+                                @if($activity->latestUpdate?->status === 'done')
+                                    <span class="badge-done">Done</span>
+                                @elseif($activity->latestUpdate?->status === 'pending')
+                                    <span class="badge-pending">Pending</span>
+                                @else
+                                    <span class="badge-none">No update</span>
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('activities.show', $activity) }}" class="table-link">View</a>
                             </td>
                         </tr>
                     @endforeach
