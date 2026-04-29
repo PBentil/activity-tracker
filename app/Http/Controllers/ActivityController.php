@@ -16,10 +16,6 @@ class ActivityController extends Controller
         return view('activities.index', compact('activities'));
     }
 
-    public function create()
-    {
-        return view('activities.create');
-    }
 
     public function store(Request $request)
     {

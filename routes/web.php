@@ -9,11 +9,11 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth'])->group(function () {
-    Route::resource('activities', ActivityController::class)
-        ->except(['edit', 'update', 'destroy']);
-
     Route::get('activities/report', [ActivityController::class, 'report'])
         ->name('activities.report');
+
+    Route::resource('activities', ActivityController::class)
+        ->only(['index', 'store', 'show']);
 
     Route::post('activities/{activity}/updates', [ActivityUpdateController::class, 'store'])
         ->name('activity-updates.store');
