@@ -5,7 +5,9 @@ WORKDIR /var/www
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libonig-dev libxml2-dev libpq-dev
 
-RUN docker-php-ext-install pdo pdo_pgsql
+RUN apt-get update && apt-get install -y \
+    git curl zip unzip libpng-dev libonig-dev libxml2-dev libpq-dev \
+    && docker-php-ext-install pdo_pgsql pgsql \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
