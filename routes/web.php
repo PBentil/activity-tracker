@@ -8,6 +8,10 @@ Route::get('/', function () {
     return redirect()->route('activities.index');
 })->name('home');
 
+Route::get('/dashboard', function () {
+    return redirect()->route('activities.index');
+})->middleware(['auth'])->name('dashboard');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('activities/report', [ActivityController::class, 'report'])
         ->name('activities.report');
